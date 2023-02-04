@@ -1,9 +1,9 @@
-#from frontend import App
-#from backend import loadDB
+from frontend import App
+from backend import loadDB, saveDB
+from data import DB
 
-#app = App(loadDB("livredb.bin"))
-#app.mainloop()
-
-from new_frontend import PongApp
-
-LDBApp().run()
+db = DB([])
+saveDB(db)
+db = loadDB()
+app = App(db)
+app.mainloop()

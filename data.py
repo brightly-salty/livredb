@@ -1,11 +1,3 @@
-from enum import Enum, auto
-
-class Status(Enum):
-  DONE = auto()
-  STARTED = auto()
-  ACQUIRED = auto()
-  INTERESTED = auto()
-
 class Author:
   def __init__(self, name):
     splitted = name.split()
@@ -21,6 +13,8 @@ class Author:
       self.first = splitted[0].strip()
       self.middle = splitted[1].strip()
       self.last = splitted[2].strip()
+    else:
+      print("ERROR:" + str(splitted))
 
   def getFirst(self):
     return self.first
@@ -50,7 +44,7 @@ class Author:
       
 class Title:
   def __init__(self, title):
-    splitted = title.split(":")
+    splitted = title.split(":", 1)
     self.main = splitted[0].strip()
     if len(splitted) > 1:
       self.sub = splitted[1].strip()
@@ -76,20 +70,16 @@ class Title:
       return self.main + ": " + self.sub
 
 class Book:
-  def __init__(self, title, name, status):
+  def __init__(self, title, name):
     self.title = Title(title)
     self.authors = []
     self.author = Author(name)
-    self.status = status
 
   def getTitle(self):
-    return self.title
+    return str(self.title)
 
   def getAuthor(self):
-    return self.author
-
-  def getStatus(self):
-    return self.status
+    return str(self.author)
 
   def setTitle(self, title):
     self.title = title
@@ -97,53 +87,19 @@ class Book:
   def setAuthor(self, author):
     self.author = author
 
-  def setStatus(self, status):
-    self.status = status
-
 class DB:
   def __init__(self, books):
     self.books = books
 
   def getBooks(self):
-    return self.books
-
-  def setBooks(self, books):
-    self.books = books
+    return enumerate(self.books)
 
   def getBookById(self, id):
     return self.books[id]
 
-  def setBookAtId(self, title, author):
+  def setBookById(self, id, author, title):
     self.books[id] = Book(title, author)
 
-  def getBooksByStatus(self, status):
-    result = []
-    for (i, book) in enumerate(self.books):
-      if book.getStatus() is status:
-        result.append((i, book))
-    return result
+  def addBook(self, author, title):
+    self.books.append(Book(title, author))
 
-  def getDoneBooks(self):
-    return self.getBooksByStatus(Status.DONE)
-
-  def getStartedBooks(self):
-    return self.getBooksByStatus(Status.STARTED)
-
-  def getAcquiredBooks(self):
-    return self.getBooksByStatus(Status.ACQUIRED)
-
-  def getInterestedBooks(self):
-    return self.getBooksByStatus(Status.INTERESTED)
-
-  def addInterestedBook(self, title, author):
-    self.books.append(Book(title, author, Status.INTERESTED))
-
-  def addAcquiredBook(self, title, author):
-    self.books.append(Book(title, author, Status.ACQUIRED))
-
-  def addStartedBook(self, title, author):
-    self.books.append(Book(tite, author, Status.STARTED))
-
-  def addDoneBook(self, title, author):
-    self.books.append(Book(title, author, Status.DONE))
-    

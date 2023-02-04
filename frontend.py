@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showinfo
+from backend import saveDB
 
 class App(tk.Tk):
   def __init__(self, db):
@@ -8,85 +9,73 @@ class App(tk.Tk):
     super().__init__()
 
     self.title("LivreDB")
-    self.geometry("400x300")
+    self.geometry("800x500")
     self.display_books()
+    self.bookFrame.grid()
 
   def display_books(self):
-    self.interestedLabel = ttk.Label(self, text="Interested")
-    self.interestedLabel.grid(row = 0, column = 0, columnspan = 2)
+    self.bookFrame = ttk.Frame(self)
 
     r = 1
-    
-    self.interestedBookLabels = {}
-    for (id, book) in self.db.getInterestedBooks():
-      s = str(book.getTitle()) + " by " + str(book.getAuthor())
-      label = ttk.Label(self, text=s)
+    for (id, book) in self.db.getBooks():
+      text = book.getTitle() + " by " + book.getAuthor()
+      label = ttk.Label(self.bookFrame, text=text)
       label.grid(row = r, column = 0)
-      r += 1
-      self.interestedBookLabels[str(id)] = label
-
-    self.acquiredLabel = ttk.Label(self, text="Acquired")
-    self.acquiredLabel.grid(row = r, column = 0, columnspan = 2)
-    r += 1
-    
-    self.acquiredBookLabels = {}
-    for (id, book) in self.db.getAcquiredBooks():
-      s = str(book.getTitle()) + " by " + str(book.getAuthor())
-      label = ttk.Label(self, text=s)
-      label.grid(row = r, column = 0)
-      button = ttk.Button(self, text="View")
-      button[command] = lambda : view_interested_book(id)
+      button = ttk.Button(self.bookFrame, text="Edit")
+      button['command'] = lambda: self.edit_book(id)
       button.grid(row = r, column = 1)
       r += 1
-      self.acquiredBookLabels[str(id)] = label
 
-    self.startedLabel = ttk.Label(self, text="Interested")
-    self.startedLabel.grid(row = r, column = 0, columnspan = 2)
-    r += 1
-    
-    self.startedBookLabels = {}
-    for (id, book) in self.db.getStartedBooks():
-      s = str(book.getTitle()) + " by " + str(book.getAuthor())
-      label = ttk.Label(self, text=s)
-      label.grid(row = r, column = 0)
-      r += 1
-      self.startedBookLabels[str(id)] = label
-      
-    self.doneLabel = tk.Label(text="Done")
-    self.doneLabel.grid(row = r, column = 0, columnspan = 2)
-    r += 1
-    
-    self.doneBookLabels = {}
-    for (id, book) in self.db.getDoneBooks():
-      s = str(book.getTitle()) + " by " + str(book.getAuthor())
-      label = ttk.Label(self, text=s)
-      label.grid(row = r, column = 0)
-      r += 1
-      self.doneBookLabels[str(id)] = label
-    
-    self.button = ttk.Button(self, text="Add a book")
-    self.button['command'] = self.add_book_clicked
-    self.button.grid(row = r, column = 0, columnspan = 2)
-    r += 1
+    add_button = ttk.Button(self.bookFrame, text="Add a book")
+    add_button['command'] = self.add_book_clicked
+    add_button.grid(row = r, column = 0, columnspan = 2)
 
-  def view_interested_book(self, id):
-    _label = self.interestedBookLabels[str(id)]
-    _book = self.db.getBookById(id)
-    frame = ttk.Frame(self)
-    author = ttk.StringVar()
-    author.set(str(book.getAuthor()))
-    title = ttk.StringVar()
-    author.set(str(book.getTitle()))
+  def create_book_entries(self, frame, callback):
     authorLabel = ttk.Label(frame,text="Author:")
     authorLabel.grid(row=0, column = 0)
-    authorEntry = ttk.Entry(frame, textvariable=author)
+    authorEntry = ttk.Entry(frame, textvariable=self.authorVar)
     authorEntry.grid(row=0, column = 1)
     titleLabel = ttk.Label(frame, text="Title:")
     titleLabel.grid(row=1,column=0)
-    titleEntry = ttk.Entry(frame, textvariable=title)
+    titleEntry = ttk.Entry(frame, textvariable=self.titleVar)
     titleEntry.grid(row=1,column=1)
+    saveButton = ttk.Button(frame, text="Save")
+    saveButton["command"] = callback
+    saveButton.grid(row=3,column=0,columnspan=2)
+
+  def edit_book(self, id):
+    book = self.db.getBookById(id)
+    self.viewFrame = ttk.Frame(self)
+    self.authorVar = tk.StringVar(self.viewFrame)
+    self.authorVar.set(book.getAuthor())
+    self.titleVar = tk.StringVar(self.viewFrame)
+    self.titleVar.set(book.getTitle())
+    self.create_book_entries(self.viewFrame, lambda: self.save_edited_book(id))
+    self.bookFrame.grid_forget()
+    self.viewFrame.grid()
+
+  def save_edited_book(self, id):
+    newAuthor = self.authorVar.get()
+    newTitle = self.titleVar.get()
+    self.db.setBookById(id, newAuthor, newTitle)
+    saveDB(self.db)
+    self.display_books()
+    self.viewFrame.grid_forget()
+    self.bookFrame.grid()
 
   def add_book_clicked(self):
-    showinfo(title="Information", message="Add a book!")
+    self.addFrame = ttk.Frame(self)
+    self.authorVar = tk.StringVar(self.addFrame)
+    self.titleVar = tk.StringVar(self.addFrame)
+    self.create_book_entries(self.addFrame, self.save_added_book)
+    self.bookFrame.grid_forget()
+    self.addFrame.grid()
   
-    
+  def save_added_book(self):
+    author = self.authorVar.get()
+    title = self.titleVar.get()
+    self.db.addBook(author, title)
+    saveDB(self.db)
+    self.display_books()
+    self.addFrame.grid_forget()
+    self.bookFrame.grid()

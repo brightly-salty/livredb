@@ -4,11 +4,12 @@ from pickle import dump, load
 from base64 import b64encode
 from bs4 import BeautifulSoup
 
-def loadDB(filename):
-  return load(open(filename, 'rb'))
+def loadDB():
+  with open("livredb.bin", "rb") as file:
+    return load(file)
 
-def saveDB(filename, db):
-  with open(filename, 'wb') as file:
+def saveDB(db):
+  with open("livredb.bin", 'wb') as file:
     dump(db, file)
 
 def levenshteinDistance(s1, s2):
