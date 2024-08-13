@@ -7,7 +7,7 @@ authors = ["Caden Haustein <dev@cadenhaustein.com>"]
 [tool.poetry.dependencies]
 python = ">=3.9.0,<3.10"
 beautifulsoup4 = "^4.11.0"
-urllib3 = "^1.26.18"
+urllib3 = "^1.26.19"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"
